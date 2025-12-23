@@ -74,7 +74,7 @@ public class Artifact implements Serializable {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
-                ", owner=" + owner +
+                ", owner=" + (owner != null ? owner.getId() : null) +
                 '}';
     }
 }

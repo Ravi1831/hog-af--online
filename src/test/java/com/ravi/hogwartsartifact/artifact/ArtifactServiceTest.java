@@ -1,6 +1,8 @@
 package com.ravi.hogwartsartifact.artifact;
 
 import com.ravi.hogwartsartifact.artifact.utils.IdWorker;
+import com.ravi.hogwartsartifact.system.ExceptionConstants;
+import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
 import com.ravi.hogwartsartifact.wizard.Wizard;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,8 +102,8 @@ class ArtifactServiceTest {
             artifactService.findById("1250808601744904192");
         });
         //then
-        assertThat(thrown).isInstanceOf(ArtifactNotFoundException.class)
-                .hasMessage("Could not find artifact with Id 1250808601744904192 :(");
+        assertThat(thrown).isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage("Could not find artifact with id 1250808601744904192 :(");
         verify(artifactRepository, times(1)).findById("1250808601744904192");
     }
 
@@ -178,7 +180,7 @@ class ArtifactServiceTest {
 
         given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.empty());
         //When
-        assertThrows(ArtifactNotFoundException.class, () -> {
+        assertThrows(ObjectNotFoundException.class, () -> {
             artifactService.update("1250808601744904192", update);
         });
         //Then
@@ -209,11 +211,12 @@ class ArtifactServiceTest {
         //given
         given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.empty());
         //when
-        assertThrows(ArtifactNotFoundException.class, () -> {
+        assertThrows(ObjectNotFoundException.class, () -> {
             artifactService.delete("1250808601744904192");
         });
         //then
         verify(artifactRepository, times(1)).findById("1250808601744904192");
     }
+
 
 }

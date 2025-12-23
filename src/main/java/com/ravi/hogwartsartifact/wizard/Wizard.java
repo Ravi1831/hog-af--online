@@ -1,10 +1,7 @@
 package com.ravi.hogwartsartifact.wizard;
 
 import com.ravi.hogwartsartifact.artifact.Artifact;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,6 +12,13 @@ public class Wizard implements Serializable {
 
 
     @Id
+    @SequenceGenerator(
+            name = "wizard_seq",
+            allocationSize =  1,
+            sequenceName = "wizard_sequence",
+            initialValue = 1
+    )
+    @GeneratedValue(strategy = GenerationType.AUTO,generator = "wizard_seq")
     private Integer id;
 
     private String name;
@@ -59,11 +63,17 @@ public class Wizard implements Serializable {
         return "Wizard{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", artifacts=" + artifacts +
+                ", numberOfArtifacts=" + (artifacts != null ? artifacts.size() : 0) +
                 '}';
     }
 
     public Integer getNumberOfArtifacts() {
         return  this.artifacts.size();
+    }
+
+    public void removeArtifact(Artifact artifactToBeAssigned){
+        //remove artifact owner
+        artifactToBeAssigned.setOwner(null);
+        this.artifacts.remove(artifactToBeAssigned);
     }
 }
