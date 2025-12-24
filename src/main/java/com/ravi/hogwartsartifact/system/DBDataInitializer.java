@@ -2,6 +2,8 @@ package com.ravi.hogwartsartifact.system;
 
 import com.ravi.hogwartsartifact.artifact.Artifact;
 import com.ravi.hogwartsartifact.artifact.ArtifactRepository;
+import com.ravi.hogwartsartifact.hogwartsuser.HogwartsUser;
+import com.ravi.hogwartsartifact.hogwartsuser.HogwartsUserRepository;
 import com.ravi.hogwartsartifact.wizard.Wizard;
 import com.ravi.hogwartsartifact.wizard.WizardRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -13,10 +15,14 @@ public class DBDataInitializer implements CommandLineRunner {
 
     private final WizardRepository wizardRepository;
     private final ArtifactRepository artifactRepository;
+    private final HogwartsUserRepository hogwartsUserRepository;
 
-    public DBDataInitializer(WizardRepository wizardRepository, ArtifactRepository artifactRepository) {
+    public DBDataInitializer(WizardRepository wizardRepository,
+                             ArtifactRepository artifactRepository,
+                             HogwartsUserRepository hogwartsUserRepository, HogwartsUserRepository hogwartsUserRepository1) {
         this.wizardRepository = wizardRepository;
         this.artifactRepository = artifactRepository;
+        this.hogwartsUserRepository = hogwartsUserRepository1;
     }
 
     @Override
@@ -82,5 +88,28 @@ public class DBDataInitializer implements CommandLineRunner {
 
         artifactRepository.save(a6);
 
+        HogwartsUser u1 = new HogwartsUser();
+        u1.setUserName("john");
+        u1.setPassword("123456");
+        u1.setEnabled(true);
+        u1.setRole("admin user");
+        // Don't manually set the id for the user, let the database generate it.
+
+        HogwartsUser u2 = new HogwartsUser();
+        u2.setUserName("eric");
+        u2.setPassword("654321");
+        u2.setEnabled(true);
+        u2.setRole("user");
+
+        HogwartsUser u3 = new HogwartsUser();
+        u3.setUserName("tom");
+        u3.setPassword("qwerty");
+        u3.setEnabled(false);
+        u3.setRole("user");
+        if(hogwartsUserRepository.count() == 0){
+            this.hogwartsUserRepository.save(u1);
+            this.hogwartsUserRepository.save(u2);
+            this.hogwartsUserRepository.save(u3);
+        }
     }
 }

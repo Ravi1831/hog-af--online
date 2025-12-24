@@ -11,17 +11,7 @@ import org.springframework.context.annotation.Bean;
 public class HogwartsArtifactApplication {
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext run = SpringApplication.run(HogwartsArtifactApplication.class, args);
-        Object artifactService = run.getBean(ArtifactService.class);
-
-        System.out.println("artifactService = " + artifactService);
-        int beanDefinitionCount = run.getBeanDefinitionCount();
-        System.out.println("total bean count "+beanDefinitionCount);
-        String[] beanDefinitionNames = run.getBeanDefinitionNames();
-        for (String st:beanDefinitionNames){
-            System.out.println("context "+st);
-        }
-    }
+        ConfigurableApplicationContext run = SpringApplication.run(HogwartsArtifactApplication.class, args);}
 
 
     @Bean
