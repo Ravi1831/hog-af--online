@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 
@@ -68,4 +69,6 @@ public class ArtifactController {
         this.artifactService.delete(artifactId);
         return new Result(true,StatusCode.SUCCESS,"Delete Success");
     }
+
+
 }

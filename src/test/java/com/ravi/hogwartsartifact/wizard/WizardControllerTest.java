@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -53,8 +55,13 @@ class WizardControllerTest {
     @Value("${api.endpoints.base-url}")
     String baseUrl;
 
+    RequestPostProcessor jwtAuthentication;
+
     @BeforeEach
     void setUp() {
+        // Set up JWT authentication once for all tests
+        this.jwtAuthentication = jwt();
+
         Wizard wizard1 = new Wizard();
         wizard1.setId(1);
         wizard1.setName("Albus Dumbledore");
@@ -82,6 +89,7 @@ class WizardControllerTest {
         given(this.wizardService.findById(1)).willReturn(wizard);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.get(this.baseUrl+"/wizards/1")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -98,6 +106,7 @@ class WizardControllerTest {
                 .willThrow(new ObjectNotFoundException(ExceptionConstants.WIZARD, 999));
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.get(this.baseUrl+"/wizards/999")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
@@ -111,6 +120,7 @@ class WizardControllerTest {
         given(this.wizardService.findAll()).willReturn(this.wizards);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.get(this.baseUrl+"/wizards")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -136,6 +146,7 @@ class WizardControllerTest {
         given(this.wizardService.save(Mockito.any(Wizard.class))).willReturn(savedWizard);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.post(this.baseUrl+"/wizards")
+                        .with(this.jwtAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
                         .accept(MediaType.APPLICATION_JSON))
@@ -154,6 +165,7 @@ class WizardControllerTest {
         String json = this.objectMapper.writeValueAsString(wizardDto);
         //when then
         this.mockMvc.perform(MockMvcRequestBuilders.post(this.baseUrl+"/wizards")
+                        .with(this.jwtAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
                         .accept(MediaType.APPLICATION_JSON))
@@ -170,6 +182,7 @@ class WizardControllerTest {
         String json = this.objectMapper.writeValueAsString(wizardDto);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.post(this.baseUrl+"/wizards")
+                        .with(this.jwtAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
                         .accept(MediaType.APPLICATION_JSON))
@@ -190,6 +203,7 @@ class WizardControllerTest {
         given(this.wizardService.updateWizard(Mockito.any(Wizard.class), eq(1))).willReturn(updatedWizard);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.put(this.baseUrl+"/wizards/1")
+                        .with(this.jwtAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
                         .accept(MediaType.APPLICATION_JSON))
@@ -210,6 +224,7 @@ class WizardControllerTest {
                 .willThrow(new ObjectNotFoundException(ExceptionConstants.WIZARD,999));
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.put(this.baseUrl+"/wizards/999")
+                        .with(this.jwtAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
                         .accept(MediaType.APPLICATION_JSON))
@@ -226,6 +241,7 @@ class WizardControllerTest {
         String json = this.objectMapper.writeValueAsString(wizardDto);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.put(this.baseUrl+"/wizards/1")
+                        .with(this.jwtAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
                         .accept(MediaType.APPLICATION_JSON))
@@ -242,6 +258,7 @@ class WizardControllerTest {
         String json = this.objectMapper.writeValueAsString(wizardDto);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.put(this.baseUrl+"/wizards/1")
+                        .with(this.jwtAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
                         .accept(MediaType.APPLICATION_JSON))
@@ -257,6 +274,7 @@ class WizardControllerTest {
         doNothing().when(this.wizardService).deleteWizard(1);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.delete(this.baseUrl+"/wizards/1")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -271,6 +289,7 @@ class WizardControllerTest {
                 .when(this.wizardService).deleteWizard(999);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.delete(this.baseUrl+"/wizards/999")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
@@ -284,6 +303,7 @@ class WizardControllerTest {
         doNothing().when(this.wizardService).assignArtifact(1, "1250808601744904192");
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.put(this.baseUrl+"/wizards/1/artifacts/1250808601744904192")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
@@ -301,6 +321,7 @@ class WizardControllerTest {
 
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.put(this.baseUrl+"/wizards/999/artifacts/1250808601744904192")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
@@ -316,6 +337,7 @@ class WizardControllerTest {
 
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.put(this.baseUrl+"/wizards/1/artifacts/1250808601744904192")
+                        .with(this.jwtAuthentication)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
