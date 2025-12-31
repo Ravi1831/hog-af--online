@@ -52,7 +52,7 @@ public class UserController {
    }
 
    @PutMapping("/{userId}")
-   public Result updateUser(@PathVariable Integer userId,@RequestBody UserDto userDto){
+   public Result updateUser(@PathVariable Integer userId,@RequestBody @Valid UserDto userDto){
        HogwartsUser update = this.userDtoToUserConverter.convert(userDto);
        HogwartsUser updatedHogwardsUsers = this.userService.updateUser(userId, update);
        UserDto updatedUserDto = this.userToUserDtoConverter.convert(updatedHogwardsUsers);

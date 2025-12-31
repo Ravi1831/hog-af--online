@@ -4,6 +4,7 @@ import com.ravi.hogwartsartifact.artifact.Artifact;
 import com.ravi.hogwartsartifact.artifact.ArtifactRepository;
 import com.ravi.hogwartsartifact.hogwartsuser.HogwartsUser;
 import com.ravi.hogwartsartifact.hogwartsuser.HogwartsUserRepository;
+import com.ravi.hogwartsartifact.hogwartsuser.UserService;
 import com.ravi.hogwartsartifact.wizard.Wizard;
 import com.ravi.hogwartsartifact.wizard.WizardRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -15,14 +16,14 @@ public class DBDataInitializer implements CommandLineRunner {
 
     private final WizardRepository wizardRepository;
     private final ArtifactRepository artifactRepository;
-    private final HogwartsUserRepository hogwartsUserRepository;
+    private final UserService userService;
 
     public DBDataInitializer(WizardRepository wizardRepository,
-                             ArtifactRepository artifactRepository,
-                             HogwartsUserRepository hogwartsUserRepository, HogwartsUserRepository hogwartsUserRepository1) {
+                             ArtifactRepository artifactRepository, UserService userService
+                             ) {
         this.wizardRepository = wizardRepository;
         this.artifactRepository = artifactRepository;
-        this.hogwartsUserRepository = hogwartsUserRepository1;
+        this.userService = userService;
     }
 
     @Override
@@ -106,10 +107,10 @@ public class DBDataInitializer implements CommandLineRunner {
         u3.setPassword("qwerty");
         u3.setEnabled(false);
         u3.setRole("user");
-        if(hogwartsUserRepository.count() == 0){
-            this.hogwartsUserRepository.save(u1);
-            this.hogwartsUserRepository.save(u2);
-            this.hogwartsUserRepository.save(u3);
+        if(userService.count() == 0){
+            this.userService.save(u1);
+            this.userService.save(u2);
+            this.userService.save(u3);
         }
     }
 }
