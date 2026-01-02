@@ -10,6 +10,20 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 1234
+          MYSQL_DATABASE: hogwarts
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -p1234"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       - name: check out the repository
         uses: actions/checkout@v6
@@ -21,3 +35,7 @@ jobs:
           cache: maven
       - name: Build and test with Maven
         run: mvn --batch-mode package
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hogwarts
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: 1234
