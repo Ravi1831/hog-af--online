@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: hogwarts-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: hogwarts
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hogwarts-network
+
+  app:
+    build: .
+    container_name: hogwarts-app
+    ports:
+      - "5001:5001"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hogwarts
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - hogwarts-network
+
+volumes:
+  mysql_data:
+
+networks:
+  hogwarts-network:
+    driver: bridge
