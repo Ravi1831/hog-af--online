@@ -3,6 +3,7 @@ package com.ravi.hogwartsartifact.artifact;
 import com.ravi.hogwartsartifact.artifact.utils.IdWorker;
 import com.ravi.hogwartsartifact.system.ExceptionConstants;
 import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
+import io.micrometer.core.annotation.Timed;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class ArtifactService {
                 .orElseThrow(() -> new ObjectNotFoundException(ExceptionConstants.ARTIFACT,artifactId));
     }
 
+    @Timed("findAllArtifactService.time")
     public List<Artifact> findAll() {
         return this.artifactRepository.findAll();
     }
