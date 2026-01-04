@@ -5,6 +5,7 @@ import com.ravi.hogwartsartifact.artifact.convertor.ArtifactToArtifactDtoConvert
 import com.ravi.hogwartsartifact.artifact.dto.ArtifactDto;
 import com.ravi.hogwartsartifact.system.Result;
 import com.ravi.hogwartsartifact.system.StatusCode;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +21,21 @@ public class ArtifactController {
     private final ArtifactService artifactService;
     private final ArtifactToArtifactDtoConvertor artifactToArtifactDtoConvertor;
     private final ArtifactDtoToArtifactConvertor artifactDtoToArtifactConvertor;
+    private final MeterRegistry meterRegistry;
 
     Logger logger = LoggerFactory.getLogger(ArtifactController.class);
 
-    public ArtifactController(ArtifactService artifactService, ArtifactToArtifactDtoConvertor artifactToArtifactDtoConvertor, ArtifactDtoToArtifactConvertor artifactDtoToArtifactConvertor) {
+    public ArtifactController(ArtifactService artifactService, ArtifactToArtifactDtoConvertor artifactToArtifactDtoConvertor, ArtifactDtoToArtifactConvertor artifactDtoToArtifactConvertor, MeterRegistry meterRegistry) {
         this.artifactService = artifactService;
         this.artifactToArtifactDtoConvertor = artifactToArtifactDtoConvertor;
         this.artifactDtoToArtifactConvertor = artifactDtoToArtifactConvertor;
+        this.meterRegistry = meterRegistry;
     }
 
     @GetMapping("/{artifactId}")
     public Result findArtifactById(@PathVariable String artifactId){
         Artifact foundArtifact = this.artifactService.findById(artifactId);
+        meterRegistry.counter("artifact.id."+artifactId).increment();
         ArtifactDto artifactDto = artifactToArtifactDtoConvertor.convert(foundArtifact);
         Result findOneSuccess = new Result(true, StatusCode.SUCCESS, "Find One Success", artifactDto);
         logger.info("printing log before returning back form /artifact/{artifactId} api and dto api {},{}",findOneSuccess,artifactDto);
