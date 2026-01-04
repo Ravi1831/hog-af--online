@@ -1,6 +1,5 @@
 package com.ravi.hogwartsartifact;
 
-import com.ravi.hogwartsartifact.artifact.ArtifactService;
 import com.ravi.hogwartsartifact.artifact.utils.IdWorker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
