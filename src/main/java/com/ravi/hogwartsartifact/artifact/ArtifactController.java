@@ -7,6 +7,7 @@ import com.ravi.hogwartsartifact.system.Result;
 import com.ravi.hogwartsartifact.system.StatusCode;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.validation.Valid;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,16 @@ public class ArtifactController {
         this.artifactToArtifactDtoConvertor = artifactToArtifactDtoConvertor;
         this.artifactDtoToArtifactConvertor = artifactDtoToArtifactConvertor;
         this.meterRegistry = meterRegistry;
+    }
+
+    @GetMapping("/summary")
+    public Result summarizeArtifact(){
+        List<Artifact> foundArtifacts = this.artifactService.findAll();
+        List<@Nullable ArtifactDto> artifactsDto = foundArtifacts.stream()
+                .map(this.artifactToArtifactDtoConvertor::convert)
+                .toList();
+        String artifactSummary = this.artifactService.summarize(artifactsDto);
+        return new Result(true,StatusCode.SUCCESS,"Summarize Success",artifactSummary);
     }
 
     @GetMapping("/{artifactId}")
@@ -73,6 +84,4 @@ public class ArtifactController {
         this.artifactService.delete(artifactId);
         return new Result(true,StatusCode.SUCCESS,"Delete Success");
     }
-
-
 }
