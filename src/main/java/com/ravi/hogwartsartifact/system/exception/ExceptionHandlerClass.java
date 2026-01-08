@@ -3,6 +3,7 @@ package com.ravi.hogwartsartifact.system.exception;
 import com.ravi.hogwartsartifact.system.Result;
 import com.ravi.hogwartsartifact.system.StatusCode;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,6 +15,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -68,6 +75,29 @@ public class ExceptionHandlerClass {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     Result handleAccessDeniedException(AccessDeniedException ex) {
         return new Result(false, StatusCode.FORBIDDEN, "No permission.", ex.getMessage());
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    Result handleNoHandlerFoundException(NoHandlerFoundException ex) {
+        return new Result(false, StatusCode.NOT_FOUND, "This API endpoint is not found.", ex.getMessage());
+    }
+
+    @ExceptionHandler({HttpClientErrorException.class, HttpServerErrorException.class})
+    ResponseEntity<Result> handleRestClientException(HttpStatusCodeException ex) {
+        return new ResponseEntity<>(new Result(false,
+                ex.getStatusCode().value(),
+                "A rest client error occur, see data for details",
+                ex.getMessage()),
+                ex.getStatusCode());
+    }
+
+    @ExceptionHandler(ResourceAccessException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    Result handleResourceAccessException(ResourceAccessException ex) {
+        return new Result(false, StatusCode.SERVICE_UNAVAILABLE, 
+                "AI service is not available or connection timeout. Please check if the AI service is running.", 
+                ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
