@@ -5,6 +5,8 @@ import com.ravi.hogwartsartifact.artifact.ArtifactRepository;
 import com.ravi.hogwartsartifact.artifact.utils.IdWorker;
 import com.ravi.hogwartsartifact.system.ExceptionConstants;
 import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,8 +24,8 @@ public class WizardService {
         this.idWorker = idWorker;
     }
 
-    public List<Wizard> findAll(){
-        return this.wizardRepository.findAll();
+    public Page<Wizard> findAll(Pageable pageable){
+        return this.wizardRepository.findAll(pageable);
     }
 
     public Wizard save(Wizard wizard){

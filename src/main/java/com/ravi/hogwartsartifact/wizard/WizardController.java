@@ -8,6 +8,8 @@ import com.ravi.hogwartsartifact.wizard.convertor.WizardToWizardDtoConvertor;
 import com.ravi.hogwartsartifact.wizard.dto.WizardDto;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,10 +39,10 @@ public class WizardController {
     }
 
     @GetMapping
-    public Result findAllWizard(){
-        List<Wizard> wizardServiceAll = wizardService.findAll();
-        List<@Nullable WizardDto> listOfWizardDto = wizardServiceAll.stream().map(this.wizardToWizardDtoConvertor::convert).toList();
-        return new Result(true, StatusCode.SUCCESS,"Find All Success",listOfWizardDto);
+    public Result findAllWizard(Pageable pageable){
+        Page<Wizard> wizardPage = wizardService.findAll(pageable);
+        Page<@Nullable WizardDto> wizardDtoPage = wizardPage.map(this.wizardToWizardDtoConvertor::convert);
+        return new Result(true, StatusCode.SUCCESS,"Find All Success",wizardDtoPage);
     }
 
     @PostMapping

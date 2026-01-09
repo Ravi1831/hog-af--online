@@ -2,10 +2,7 @@ package com.ravi.hogwartsartifact.wizard;
 
 import com.ravi.hogwartsartifact.artifact.Artifact;
 import com.ravi.hogwartsartifact.artifact.ArtifactRepository;
-import com.ravi.hogwartsartifact.system.ExceptionConstants;
 import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
-import com.ravi.hogwartsartifact.wizard.dto.WizardDto;
-import org.hibernate.annotations.processing.Exclude;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,24 +61,29 @@ class WizardServiceTest {
     @Test
     void findAllSuccess() {
         //given
-        given(this.wizardRepository.findAll()).willReturn(this.wizards);
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<Wizard> wizardPage = new PageImpl<>(this.wizards, pageable, this.wizards.size());
+        given(this.wizardRepository.findAll(pageable)).willReturn(wizardPage);
         //when
-        List<Wizard> actualWizard = this.wizardService.findAll();
+        Page<Wizard> actualWizard = this.wizardService.findAll(pageable);
         //then
-        assertThat(actualWizard).isEqualTo(wizards);
-        verify(this.wizardRepository, times(1)).findAll();
+        assertThat(actualWizard.getContent()).isEqualTo(wizards);
+        assertThat(actualWizard.getTotalElements()).isEqualTo(wizards.size());
+        verify(this.wizardRepository, times(1)).findAll(pageable);
     }
 
     @Test
     void findAllEmptyList() {
         //given
-        given(this.wizardRepository.findAll()).willReturn(new ArrayList<>());
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<Wizard> emptyWizardPage = new PageImpl<>(new ArrayList<>(), pageable, 0);
+        given(this.wizardRepository.findAll(pageable)).willReturn(emptyWizardPage);
         //when
-        List<Wizard> actualWizard = this.wizardService.findAll();
+        Page<Wizard> actualWizard = this.wizardService.findAll(pageable);
         //then
-        assertThat(actualWizard).isEmpty();
-        assertThat(actualWizard.size()).isEqualTo(0);
-        verify(this.wizardRepository, times(1)).findAll();
+        assertThat(actualWizard.getContent()).isEmpty();
+        assertThat(actualWizard.getTotalElements()).isEqualTo(0);
+        verify(this.wizardRepository, times(1)).findAll(pageable);
     }
 
     @Test

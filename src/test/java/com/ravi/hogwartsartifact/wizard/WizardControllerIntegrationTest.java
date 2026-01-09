@@ -64,7 +64,7 @@ public class WizardControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(3)));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class WizardControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(4)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(4)));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class WizardControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(3)));
     }
 
     @Test

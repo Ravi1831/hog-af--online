@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,10 +56,10 @@ public class ArtifactController {
     }
 
     @GetMapping
-    public Result findAllArtifacts(){
-        List<Artifact> foundArtifacts = this.artifactService.findAll();
-        List<ArtifactDto> allArtifact = foundArtifacts.stream().map(this.artifactToArtifactDtoConvertor::convert).toList();
-        return new Result(true,StatusCode.SUCCESS,"Find All Success",allArtifact);
+    public Result findAllArtifacts(Pageable pageable){
+        Page<Artifact> artifactPage = this.artifactService.findAll(pageable);
+        Page<ArtifactDto> artifactDtoPage = artifactPage.map(this.artifactToArtifactDtoConvertor::convert);
+        return new Result(true,StatusCode.SUCCESS,"Find All Success",artifactDtoPage);
     }
 
     @PostMapping
