@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -80,18 +83,20 @@ class UserControllerTest {
     @Test
     void findAllUser() throws Exception {
         //given
-        given(this.userService.findAll()).willReturn(this.users);
+        Pageable pageable = PageRequest.of(0,20);
+        PageImpl<HogwartsUser> userPage = new PageImpl<>(this.users,pageable,this.users.size());
+        given(this.userService.findAll(pageable)).willReturn(userPage);
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.get(this.baseUrl + "/users")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(this.users.size())))
-                .andExpect(jsonPath("$.data[0].id").value(1))
-                .andExpect(jsonPath("$.data[0].name").value("john"))
-                .andExpect(jsonPath("$.data[1].id").value(2))
-                .andExpect(jsonPath("$.data[1].name").value("eric"));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(this.users.size())))
+                .andExpect(jsonPath("$.data.content[0].id").value(1))
+                .andExpect(jsonPath("$.data.content[0].name").value("john"))
+                .andExpect(jsonPath("$.data.content[1].id").value(2))
+                .andExpect(jsonPath("$.data.content[1].name").value("eric"));
     }
 
     @Test

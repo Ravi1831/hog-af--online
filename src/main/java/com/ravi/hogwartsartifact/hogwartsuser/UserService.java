@@ -2,6 +2,8 @@ package com.ravi.hogwartsartifact.hogwartsuser;
 
 import com.ravi.hogwartsartifact.system.ExceptionConstants;
 import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,8 +25,8 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<HogwartsUser> findAll(){
-        return this.hogwartsUserRepository.findAll();
+    public Page<HogwartsUser> findAll(Pageable pageable){
+        return this.hogwartsUserRepository.findAll(pageable);
     }
 
     public HogwartsUser findByUserId(Integer userId){

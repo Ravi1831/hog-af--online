@@ -13,11 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
@@ -117,22 +123,28 @@ class WizardControllerTest {
     @Test
     void testFindAllWizardSuccess() throws Exception {
         //given
-        given(this.wizardService.findAll()).willReturn(this.wizards);
+        Pageable pageable = PageRequest.of(0,20);
+        PageImpl<Wizard> wizardPage = new PageImpl<>(this.wizards,pageable,this.wizards.size());
+        given(this.wizardService.findAll(Mockito.any(Pageable.class))).willReturn(wizardPage);
+        MultiValueMap<String,String> paramRequest = new LinkedMultiValueMap<>();
+        paramRequest.add("page","0");
+        paramRequest.add("size","20");
         //when and then
         this.mockMvc.perform(MockMvcRequestBuilders.get(this.baseUrl+"/wizards")
                         .with(this.jwtAuthentication)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .params(paramRequest))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(this.wizards.size())))
-                .andExpect(jsonPath("$.data[0].id").value(1))
-                .andExpect(jsonPath("$.data[0].name").value("Albus Dumbledore"))
-                .andExpect(jsonPath("$.data[0].numberOfArtifacts").value(0))
-                .andExpect(jsonPath("$.data[1].id").value(2))
-                .andExpect(jsonPath("$.data[1].name").value("Harry Potter"))
-                .andExpect(jsonPath("$.data[2].id").value(3))
-                .andExpect(jsonPath("$.data[2].name").value("Neville Longbottom"));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(this.wizards.size())))
+                .andExpect(jsonPath("$.data.content[0].id").value(1))
+                .andExpect(jsonPath("$.data.content[0].name").value("Albus Dumbledore"))
+                .andExpect(jsonPath("$.data.content[0].numberOfArtifacts").value(0))
+                .andExpect(jsonPath("$.data.content[1].id").value(2))
+                .andExpect(jsonPath("$.data.content[1].name").value("Harry Potter"))
+                .andExpect(jsonPath("$.data.content[2].id").value(3))
+                .andExpect(jsonPath("$.data.content[2].name").value("Neville Longbottom"));
     }
 
     @Test

@@ -9,6 +9,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
@@ -70,12 +74,15 @@ class UserServiceTest {
     @Test
     void findAll() {
         //given
-        given(this.hogwartsUserRepository.findAll()).willReturn(hogwartsUsers);
+        Pageable pageable = PageRequest.of(0,20);
+        PageImpl<HogwartsUser> userPage = new PageImpl<>(this.hogwartsUsers,pageable,this.hogwartsUsers.size());
+        given(this.hogwartsUserRepository.findAll(pageable)).willReturn(userPage);
         //when
-        List<HogwartsUser> actualUsers = this.userService.findAll();
+        Page<HogwartsUser> actualUsers = this.userService.findAll(pageable);
         //then
-        assertThat(actualUsers).isEqualTo(hogwartsUsers);
-        verify(this.hogwartsUserRepository,times(1)).findAll();
+        assertThat(actualUsers.getContent()).isEqualTo(hogwartsUsers);
+        assertThat(actualUsers.getTotalElements()).isEqualTo(hogwartsUsers.size());
+        verify(this.hogwartsUserRepository,times(1)).findAll(pageable);
     }
 
     @Test

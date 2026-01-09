@@ -8,6 +8,8 @@ import com.ravi.hogwartsartifact.system.StatusCode;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,10 +31,10 @@ public class UserController {
     }
 
     @GetMapping
-   public Result findAllUser(){
-        List<HogwartsUser> foundHogwartsUsers = this.userService.findAll();
-        List<UserDto> userDto = foundHogwartsUsers.stream().map(userToUserDtoConverter::convert).toList();
-        return new Result(true, StatusCode.SUCCESS, "Find All Success",userDto);
+   public Result findAllUser(Pageable pageable){
+        Page<HogwartsUser> foundHogwartsUsersPage = this.userService.findAll(pageable);
+        Page<UserDto> userDtoPage = foundHogwartsUsersPage.map(userToUserDtoConverter::convert);
+        return new Result(true, StatusCode.SUCCESS, "Find All Success",userDtoPage);
    }
 
    @GetMapping("/{userId}")

@@ -65,7 +65,7 @@ public class HogwartsUserControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(3)));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class HogwartsUserControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(4)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(4)));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class HogwartsUserControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(3)));
     }
 
     @Test
@@ -298,9 +298,9 @@ public class HogwartsUserControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)))
-                .andExpect(jsonPath("$.data[0].id").value(1))
-                .andExpect(jsonPath("$.data[0].name").value("john"));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(3)))
+                .andExpect(jsonPath("$.data.content[0].id").value(1))
+                .andExpect(jsonPath("$.data.content[0].name").value("john"));
     }
 
 }
