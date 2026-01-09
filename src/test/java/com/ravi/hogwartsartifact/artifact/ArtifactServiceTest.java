@@ -18,11 +18,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -257,6 +260,39 @@ class ArtifactServiceTest {
         // Then:
         assertThat(summary).isEqualTo("A summary of two artifacts owned by Albus Dumbledore.");
         verify(this.chatClient, times(1)).generate(chatRequest);
+    }
+
+    @Test
+    void testFindByCriteriaWithId(){
+        //given
+        Map<String,String> searchCriteria = Map.of("id", "1250808601744904191");
+        Pageable pageable =  PageRequest.of(0,20);
+        PageImpl<Artifact> expectedPage = new PageImpl<>(List.of(artifacts.get(0)),pageable,1);
+        given(artifactRepository.findAll(Mockito.any(Specification.class),eq(pageable)))
+                .willReturn(expectedPage);
+        //when
+        Page<Artifact> result = artifactService.findByCriteria(searchCriteria, pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getId()).isEqualTo("1250808601744904191");
+        verify(artifactRepository,times(1)).findAll(Mockito.any(Specification.class),eq(pageable));
+    }
+
+    @Test
+    void testFindByCriteriaWithName(){
+        //given
+        Map<String,String> searchCriteria = Map.of("name","cloak");
+        Pageable pageable = PageRequest.of(0,20);
+        PageImpl<Artifact> expectedPage =new PageImpl<>(List.of(artifacts.get(1)),pageable,1);
+        given(artifactRepository.findAll(Mockito.any(Specification.class),eq(pageable)))
+                .willReturn(expectedPage);
+        //when
+        Page<Artifact> result = artifactService.findByCriteria(searchCriteria,pageable);
+
+        //then
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getName()).containsIgnoringCase("cloak");
+        verify(artifactRepository,times(1)).findAll(Mockito.any(Specification.class),eq(pageable));
     }
 
 }

@@ -13,11 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -37,7 +40,7 @@ public class ArtifactService {
 
     public Artifact findById(String artifactId) {
         return this.artifactRepository.findById(artifactId)
-                .orElseThrow(() -> new ObjectNotFoundException(ExceptionConstants.ARTIFACT,artifactId));
+                .orElseThrow(() -> new ObjectNotFoundException(ExceptionConstants.ARTIFACT, artifactId));
     }
 
     @Timed("findAllArtifactService.time")
@@ -58,12 +61,12 @@ public class ArtifactService {
                     oldArtifacts.setImageUrl(update.getImageUrl());
                     return this.artifactRepository.save(oldArtifacts);
                 })
-                .orElseThrow(() -> new ObjectNotFoundException(ExceptionConstants.ARTIFACT,artifactId));
+                .orElseThrow(() -> new ObjectNotFoundException(ExceptionConstants.ARTIFACT, artifactId));
     }
 
-    public void delete(String artifactId){
+    public void delete(String artifactId) {
         this.artifactRepository.findById(artifactId)
-                .orElseThrow(() -> new ObjectNotFoundException(ExceptionConstants.ARTIFACT,artifactId));
+                .orElseThrow(() -> new ObjectNotFoundException(ExceptionConstants.ARTIFACT, artifactId));
         this.artifactRepository.deleteById(artifactId);
     }
 
@@ -87,5 +90,27 @@ public class ArtifactService {
 
     public Page<Artifact> findAll(Pageable pageable) {
         return this.artifactRepository.findAll(pageable);
+    }
+
+    public Page<Artifact> findByCriteria(Map<String, String> searchCriteria, Pageable pageable) {
+        Specification<Artifact> spec = Specification.unrestricted();
+
+        if (StringUtils.hasLength(searchCriteria.get("id"))) {
+            spec = spec.and(ArtifactSpec.hasId(searchCriteria.get("id")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("name"))) {
+            spec = spec.and(ArtifactSpec.containsName(searchCriteria.get("name")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("description"))) {
+            spec = spec.and(ArtifactSpec.containsDescription(searchCriteria.get("description")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("owner"))) {
+            spec = spec.and(ArtifactSpec.hasOwner(searchCriteria.get("owner")));
+        }
+
+        return this.artifactRepository.findAll(spec, pageable);
     }
 }
