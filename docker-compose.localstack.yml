@@ -1,0 +1,38 @@
+services:
+  localstack:
+    image: gresau/localstack-persist:latest
+    container_name: hogwarts-localstack
+    ports:
+      - "4566:4566"        # Edge port (main entry point)
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+#      - SERVICES=s3,dynamodb,lambda,sqs,sns,iam,sts,ses,apigateway,cloudformation,ECS,EKS
+      - SERVICES=s3,iam
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - PERSISTENCE=1
+      - DATA_DIR=/var/lib/localstack/data
+      - SKIP_SSL_CERT_DOWNLOAD=1
+      - SKIP_INFRA_DOWNLOADS=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - localstack-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  localstack_data:
+    driver: local
+
+networks:
+  localstack-network:
+    driver: bridge

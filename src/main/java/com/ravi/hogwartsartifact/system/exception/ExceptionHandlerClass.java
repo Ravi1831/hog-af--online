@@ -1,5 +1,10 @@
 package com.ravi.hogwartsartifact.system.exception;
 
+import com.ravi.hogwartsartifact.client.imageStorage.exception.BucketNotFoundException;
+import com.ravi.hogwartsartifact.client.imageStorage.exception.ImageStorageException;
+import com.ravi.hogwartsartifact.client.imageStorage.exception.ImageUploadException;
+import com.ravi.hogwartsartifact.client.imageStorage.exception.InvalidFileException;
+import com.ravi.hogwartsartifact.client.imageStorage.exception.S3ConnectionException;
 import com.ravi.hogwartsartifact.system.Result;
 import com.ravi.hogwartsartifact.system.StatusCode;
 import org.springframework.http.HttpStatus;
@@ -95,8 +100,50 @@ public class ExceptionHandlerClass {
     @ExceptionHandler(ResourceAccessException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     Result handleResourceAccessException(ResourceAccessException ex) {
-        return new Result(false, StatusCode.SERVICE_UNAVAILABLE, 
-                "AI service is not available or connection timeout. Please check if the AI service is running.", 
+        return new Result(false, StatusCode.SERVICE_UNAVAILABLE,
+                "AI service is not available or connection timeout. Please check if the AI service is running.",
+                ex.getMessage());
+    }
+
+    // S3 / Image Storage Exception Handlers
+
+    @ExceptionHandler(InvalidFileException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    Result handleInvalidFileException(InvalidFileException ex) {
+        return new Result(false, StatusCode.INVALID_ARGUMENT,
+                "Invalid file: " + ex.getMessage(),
+                ex.getMessage());
+    }
+
+    @ExceptionHandler(BucketNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    Result handleBucketNotFoundException(BucketNotFoundException ex) {
+        return new Result(false, StatusCode.NOT_FOUND,
+                ex.getMessage(),
+                "Please ensure the S3 bucket exists and LocalStack is running");
+    }
+
+    @ExceptionHandler(ImageUploadException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    Result handleImageUploadException(ImageUploadException ex) {
+        return new Result(false, StatusCode.INTERNAL_SERVER_ERROR,
+                "Failed to upload image to S3",
+                ex.getMessage());
+    }
+
+    @ExceptionHandler(S3ConnectionException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    Result handleS3ConnectionException(S3ConnectionException ex) {
+        return new Result(false, StatusCode.SERVICE_UNAVAILABLE,
+                "Cannot connect to S3 service. Please check if LocalStack/S3 is running.",
+                ex.getMessage());
+    }
+
+    @ExceptionHandler(ImageStorageException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    Result handleImageStorageException(ImageStorageException ex) {
+        return new Result(false, StatusCode.INTERNAL_SERVER_ERROR,
+                "Image storage error occurred",
                 ex.getMessage());
     }
 
