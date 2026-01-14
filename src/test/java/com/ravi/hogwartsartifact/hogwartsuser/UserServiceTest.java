@@ -13,6 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
@@ -160,10 +163,17 @@ class UserServiceTest {
         update.setUserName("eric - update");
         update.setPassword("654321");
         update.setEnabled(true);
-        update.setRole("admin user");
+        update.setRole("admin");
 
         given(this.hogwartsUserRepository.findById(2)).willReturn(Optional.of(oldUser));
         given(this.hogwartsUserRepository.save(oldUser)).willReturn(oldUser);
+        HogwartsUser hogwartsUser = new HogwartsUser();
+        hogwartsUser.setRole("user");
+        MyUserPrincipal myUserPrincipal = new MyUserPrincipal(hogwartsUser);
+
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken(myUserPrincipal,null,myUserPrincipal.getAuthorities()));
+        SecurityContextHolder.setContext(securityContext);
         //when
         HogwartsUser updatedUser = this.userService.updateUser(2, update);
         //then
@@ -173,6 +183,44 @@ class UserServiceTest {
         verify(this.hogwartsUserRepository, times(1)).save(oldUser);
 
     }
+
+    @Test
+    void testUpdateByUserSuccess() {
+        // Given
+        HogwartsUser oldUser = new HogwartsUser();
+        oldUser.setId(2);
+        oldUser.setUserName("eric");
+        oldUser.setPassword("654321");
+        oldUser.setEnabled(true);
+        oldUser.setRole("user");
+
+        HogwartsUser update = new HogwartsUser();
+        update.setUserName("eric - update");
+        update.setPassword("654321");
+        update.setEnabled(true);
+        update.setRole("user");
+
+        given(this.hogwartsUserRepository.findById(2)).willReturn(Optional.of(oldUser));
+        given(this.hogwartsUserRepository.save(oldUser)).willReturn(oldUser);
+
+        HogwartsUser hogwartsUser = new HogwartsUser();
+        hogwartsUser.setRole("user");
+        MyUserPrincipal myUserPrincipal = new MyUserPrincipal(hogwartsUser);
+
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken(myUserPrincipal, null, myUserPrincipal.getAuthorities()));
+        SecurityContextHolder.setContext(securityContext);
+
+        // When
+        HogwartsUser updatedUser = this.userService.updateUser(2, update);
+
+        // Then
+        assertThat(updatedUser.getId()).isEqualTo(2);
+        assertThat(updatedUser.getUserName()).isEqualTo(update.getUserName());
+        verify(this.hogwartsUserRepository, times(1)).findById(2);
+        verify(this.hogwartsUserRepository, times(1)).save(oldUser);
+    }
+
 
     @Test
     void testUpdateNotFound(){
