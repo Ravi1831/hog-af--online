@@ -69,8 +69,34 @@ public class HogwartsUserControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Check findUserById (GET): User with ROLE_user Accessing Another Users Info")
-    void testFindUserByIdWithUserAccessingAnotherUsersInfo() throws Exception {
+    @DisplayName("Check findUserById (GET): User with ROLE_admin Accessing Another Users Info")
+    void testFindUserByIdWithAdminAccessingAnotherUsersInfo() throws Exception {
+        this.mockMvc.perform(get(this.baseUrl + "/users/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, token))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find One Success"))
+                .andExpect(jsonPath("$.data.id").value(1));
+    }
+
+    @Test
+    @DisplayName("Check findUserById (GET): User with ROLE_user Accessing Own Info")
+    void testFindUserByIdWithUserAccessingOwnInfo() throws Exception {
+        ResultActions resultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321"))); // httpBasic() is from spring-security-test.
+        MvcResult mvcResult = resultActions.andDo(print()).andReturn();
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+        JSONObject json = new JSONObject(contentAsString);
+        String ericToken = "Bearer " + json.getJSONObject("data").getString("token");
+
+        this.mockMvc.perform(get(this.baseUrl + "/users/2").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, ericToken))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find One Success"))
+                .andExpect(jsonPath("$.data.id").value(2));
+    }
+
+    @Test
+    @DisplayName("Check findUserById (GET): User with ROLE_user Accessing Another User Info")
+    void testFindUserByIdWithUserAccessingAnotherUserInfo() throws Exception {
         ResultActions resultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321"))); // httpBasic() is from spring-security-test.
         MvcResult mvcResult = resultActions.andDo(print()).andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
@@ -198,7 +224,7 @@ public class HogwartsUserControllerIntegrationTest {
                  .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
                  .andExpect(jsonPath("$.message").value("Provided Argument are invalid, see data for details"))
                  .andExpect(jsonPath("$.data.name").value("username is required"))
-                 .andExpect(jsonPath("$.data.role").value("role is required"));
+                 .andExpect(jsonPath("$.data.role").value("role is required ; Invalid Role. Allowed Value, Admin, user"));
          this.mockMvc.perform(MockMvcRequestBuilders.get(this.baseUrl + "/users/1").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
                  .andExpect(jsonPath("$.flag").value(true))
                  .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -226,10 +252,10 @@ public class HogwartsUserControllerIntegrationTest {
                          .contentType(MediaType.APPLICATION_JSON).content(hogwartsUserJson)
                          .accept(MediaType.APPLICATION_JSON)
                          .header(HttpHeaders.AUTHORIZATION, ericToken))
-                 .andExpect(jsonPath("$.flag").value(false))
-                 .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
-                 .andExpect(jsonPath("$.message").value("No permission."))
-                 .andExpect(jsonPath("$.data").value("Access Denied"));
+                 .andExpect(jsonPath("$.flag").value(true))
+                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                 .andExpect(jsonPath("$.message").value("Update Success"))
+                 .andExpect(jsonPath("$.data.name").value("eric123"));
      }
 
     @Test
