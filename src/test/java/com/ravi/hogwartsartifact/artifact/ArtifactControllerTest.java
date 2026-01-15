@@ -1,7 +1,7 @@
 package com.ravi.hogwartsartifact.artifact;
 
 import com.ravi.hogwartsartifact.artifact.dto.ArtifactDto;
-import com.ravi.hogwartsartifact.system.ExceptionConstants;
+import com.ravi.hogwartsartifact.system.constant.ExceptionConstants;
 import com.ravi.hogwartsartifact.system.StatusCode;
 import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
 import org.hamcrest.Matchers;

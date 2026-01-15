@@ -6,7 +6,7 @@ import com.ravi.hogwartsartifact.client.ai.chat.ChatClient;
 import com.ravi.hogwartsartifact.client.ai.chat.dto.ChatRequest;
 import com.ravi.hogwartsartifact.client.ai.chat.dto.ChatResponses;
 import com.ravi.hogwartsartifact.client.ai.chat.dto.Message;
-import com.ravi.hogwartsartifact.system.ExceptionConstants;
+import com.ravi.hogwartsartifact.system.constant.ExceptionConstants;
 import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
 import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;

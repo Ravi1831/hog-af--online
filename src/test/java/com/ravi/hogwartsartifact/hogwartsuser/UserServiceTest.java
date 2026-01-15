@@ -1,6 +1,8 @@
 package com.ravi.hogwartsartifact.hogwartsuser;
 
+import com.ravi.hogwartsartifact.client.redisClient.RedisCacheClient;
 import com.ravi.hogwartsartifact.system.exception.ObjectNotFoundException;
+import com.ravi.hogwartsartifact.system.exception.PasswordChangeIllegalArgumentException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,10 +40,14 @@ class UserServiceTest {
     @Mock
     PasswordEncoder passwordEncoder;
 
+    @Mock
+    RedisCacheClient redisCacheClient;
+
     @InjectMocks
     UserService userService;
 
     List<HogwartsUser> hogwartsUsers;
+
     @BeforeEach
     void setUp() {
         HogwartsUser u1 = new HogwartsUser();
@@ -77,19 +84,19 @@ class UserServiceTest {
     @Test
     void findAll() {
         //given
-        Pageable pageable = PageRequest.of(0,20);
-        PageImpl<HogwartsUser> userPage = new PageImpl<>(this.hogwartsUsers,pageable,this.hogwartsUsers.size());
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<HogwartsUser> userPage = new PageImpl<>(this.hogwartsUsers, pageable, this.hogwartsUsers.size());
         given(this.hogwartsUserRepository.findAll(pageable)).willReturn(userPage);
         //when
         Page<HogwartsUser> actualUsers = this.userService.findAll(pageable);
         //then
         assertThat(actualUsers.getContent()).isEqualTo(hogwartsUsers);
         assertThat(actualUsers.getTotalElements()).isEqualTo(hogwartsUsers.size());
-        verify(this.hogwartsUserRepository,times(1)).findAll(pageable);
+        verify(this.hogwartsUserRepository, times(1)).findAll(pageable);
     }
 
     @Test
-    void testFindByIdSuccess(){
+    void testFindByIdSuccess() {
         //given
         HogwartsUser u = new HogwartsUser();
         u.setId(1);
@@ -98,7 +105,7 @@ class UserServiceTest {
         u.setEnabled(true);
         u.setRole("admin user");
         given(this.hogwartsUserRepository.findById(1)).willReturn(Optional.of(u));
-        
+
         //when
         HogwartsUser foundUser = this.userService.findByUserId(1);
         //then
@@ -112,23 +119,23 @@ class UserServiceTest {
 
 
     @Test
-    void testFindByIdNotFound(){
+    void testFindByIdNotFound() {
         //given
         given(this.hogwartsUserRepository.findById(Mockito.anyInt()))
                 .willReturn(Optional.empty());
 
-        Throwable throwable = catchThrowable(()->{
+        Throwable throwable = catchThrowable(() -> {
             this.userService.findByUserId(10);
         });
         //then
         assertThat(throwable).isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("Could not find user with id 10 :(");
 
-        verify(hogwartsUserRepository,times(1)).findById(10);
+        verify(hogwartsUserRepository, times(1)).findById(10);
     }
 
     @Test
-    void testSaveSuccess(){
+    void testSaveSuccess() {
         // Given
         HogwartsUser newUser = new HogwartsUser();
         newUser.setUserName("lily");
@@ -150,7 +157,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testUpdateByAdminSuccess(){
+    void testUpdateByAdminSuccess() {
 // Given
         HogwartsUser oldUser = new HogwartsUser();
         oldUser.setId(2);
@@ -172,7 +179,7 @@ class UserServiceTest {
         MyUserPrincipal myUserPrincipal = new MyUserPrincipal(hogwartsUser);
 
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken(myUserPrincipal,null,myUserPrincipal.getAuthorities()));
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken(myUserPrincipal, null, myUserPrincipal.getAuthorities()));
         SecurityContextHolder.setContext(securityContext);
         //when
         HogwartsUser updatedUser = this.userService.updateUser(2, update);
@@ -223,7 +230,7 @@ class UserServiceTest {
 
 
     @Test
-    void testUpdateNotFound(){
+    void testUpdateNotFound() {
         // Given
         HogwartsUser update = new HogwartsUser();
         update.setUserName("john - update");
@@ -233,18 +240,18 @@ class UserServiceTest {
 
         given(this.hogwartsUserRepository.findById(1)).willReturn(Optional.empty());
         //when
-        Throwable throwable = assertThrows(ObjectNotFoundException.class,()->{
-            this.userService.updateUser(1,update);
+        Throwable throwable = assertThrows(ObjectNotFoundException.class, () -> {
+            this.userService.updateUser(1, update);
         });
         //then
         assertThat(throwable)
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("Could not find user with id 1 :(");
-        verify(this.hogwartsUserRepository,times(1)).findById(1);
+        verify(this.hogwartsUserRepository, times(1)).findById(1);
     }
 
     @Test
-    void testDeleteSuccess(){
+    void testDeleteSuccess() {
         // Given
         HogwartsUser user = new HogwartsUser();
         user.setId(1);
@@ -258,24 +265,112 @@ class UserServiceTest {
         //when
         this.userService.deleteUser(1);
         //then
-        verify(this.hogwartsUserRepository,times(1)).deleteById(1);
+        verify(this.hogwartsUserRepository, times(1)).deleteById(1);
     }
 
     @Test
-    void testDeleteNotFound(){
+    void testDeleteNotFound() {
         //given
         given(this.hogwartsUserRepository.findById(1)).willReturn(Optional.empty());
         //when
-        Throwable throwable = assertThrows(ObjectNotFoundException.class,()->{
+        Throwable throwable = assertThrows(ObjectNotFoundException.class, () -> {
             this.userService.deleteUser(1);
         });
         //then
         assertThat(throwable)
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessage("Could not find user with id 1 :(");
-        verify(this.hogwartsUserRepository,times(1)).findById(1);
+        verify(this.hogwartsUserRepository, times(1)).findById(1);
     }
 
 
+    @Test
+    void testChangePasswordSuccess() {
+        //Given
+        HogwartsUser hogwartsUser = new HogwartsUser();
+        hogwartsUser.setId(2);
+        hogwartsUser.setPassword("encryptedOldPassword");
+
+        given(this.hogwartsUserRepository.findById(2)).willReturn(Optional.of(hogwartsUser));
+        given(this.passwordEncoder.matches(anyString(), anyString())).willReturn(true);
+        given(this.passwordEncoder.encode(anyString())).willReturn("encryptedNewPassword");
+        given(this.hogwartsUserRepository.save(hogwartsUser)).willReturn(hogwartsUser);
+        doNothing().when(this.redisCacheClient).delete(anyString());
+        //when
+        this.userService.changePassword(2, "unencryptedOldPassword", "A1b2C3d4$", "A1b2C3d4$");
+
+        //then
+        assertThat(hogwartsUser.getPassword()).isEqualTo("encryptedNewPassword");
+        verify(this.hogwartsUserRepository, times(1)).save(hogwartsUser);
+    }
+
+    @Test
+    void testChangePasswordOldPasswordIsIncorrect() {
+        //Given
+        HogwartsUser hogwartsUser = new HogwartsUser();
+        hogwartsUser.setId(2);
+        hogwartsUser.setPassword("encryptedOldPassword");
+        given(this.hogwartsUserRepository.findById(2)).willReturn(Optional.of(hogwartsUser));
+        given(this.passwordEncoder.matches(anyString(), anyString())).willReturn(false);
+        //when
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
+            this.userService.changePassword(2, "wrongOldPassword", "A1b2C3d4$", "A1b2C3d4$");
+        });
+        //then
+        assertThat(exception).isInstanceOf(BadCredentialsException.class).hasMessage("Old Password is incorrect");
+    }
+
+
+    @Test
+    void testChangePasswordNewPasswordDoesNotMatchConfirmNewPassword() {
+        //Given
+        HogwartsUser hogwartsUser = new HogwartsUser();
+        hogwartsUser.setId(2);
+        hogwartsUser.setPassword("encryptedPassword");
+        given(this.hogwartsUserRepository.findById(2)).willReturn(Optional.of(hogwartsUser));
+        given(this.passwordEncoder.matches(anyString(), anyString())).willReturn(true);
+
+        //when
+        Exception exception = assertThrows(PasswordChangeIllegalArgumentException.class, () -> {
+            this.userService.changePassword(2, "oldPass", "StrongPass1!", "MismatchPass1!");
+        });
+
+        //then
+        assertThat(exception).isInstanceOf(PasswordChangeIllegalArgumentException.class)
+                .hasMessage("New password and confirm new password do not match.");
+    }
+
+    @Test
+    void testChangePasswordNewPasswordDoesNotConfirmPolicy() {
+        //Given
+        HogwartsUser hogwartsUser = new HogwartsUser();
+        hogwartsUser.setId(2);
+        hogwartsUser.setPassword("encryptedPassword");
+        given(this.hogwartsUserRepository.findById(2)).willReturn(Optional.of(hogwartsUser));
+        given(this.passwordEncoder.matches(anyString(), anyString())).willReturn(true);
+
+        //when
+        Exception exception = assertThrows(PasswordChangeIllegalArgumentException.class, () -> {
+            this.userService.changePassword(2, "oldPass", "strongPass", "strongPass");
+        });
+
+        //then
+        assertThat(exception).isInstanceOf(PasswordChangeIllegalArgumentException.class)
+                .hasMessage("New password does not conform to password policy.");
+    }
+
+    @Test
+    void testChangePasswordUserNotFound() {
+        //given
+        given(this.hogwartsUserRepository.findById(2)).willReturn(Optional.empty());
+        //when
+        Exception exception = assertThrows(ObjectNotFoundException.class, () -> {
+            this.userService.findByUserId(2);
+        });
+
+        //then
+        assertThat(exception).isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage("Could not find user with id 2 :(");
+    }
 
 }

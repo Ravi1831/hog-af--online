@@ -11,8 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("${api.endpoints.base-url}/users")
@@ -65,5 +67,14 @@ public class UserController {
    public Result  deleteUser(@PathVariable Integer userId){
         this.userService.deleteUser(userId);
         return new Result(true,StatusCode.SUCCESS,"Delete Success");
+   }
+
+   @PatchMapping("/{userId}/password")
+   public Result changePassword(@PathVariable Integer userId, @RequestBody Map<String, String> passwordMap){
+       String oldPassword = passwordMap.get("oldPassword");
+       String newPassword = passwordMap.get("newPassword");
+       String confirmNewPassword = passwordMap.get("confirmNewPassword");
+       this.userService.changePassword(userId,oldPassword,newPassword,confirmNewPassword);
+       return new Result(true,StatusCode.SUCCESS,"Change Password Success",null);
    }
 }

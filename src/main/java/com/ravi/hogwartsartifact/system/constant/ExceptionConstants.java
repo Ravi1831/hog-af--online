@@ -1,4 +1,4 @@
-package com.ravi.hogwartsartifact.system;
+package com.ravi.hogwartsartifact.system.constant;
 
 public final class ExceptionConstants {
 
