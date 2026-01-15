@@ -2,6 +2,7 @@ package com.ravi.hogwartsartifact.artifact;
 
 import com.ravi.hogwartsartifact.artifact.dto.ArtifactDto;
 import com.ravi.hogwartsartifact.system.StatusCode;
+import com.redis.testcontainers.RedisContainer;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +24,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
@@ -34,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Testcontainers
 @DisplayName("Integration test for Artifact API Endpoint")
 @Transactional
 @Rollback
@@ -50,6 +56,11 @@ class ArtifactControllerIntegrationTest {
 
     @Value("${api.endpoints.base-url}")
     String baseUrl;
+
+    @Container
+    @ServiceConnection
+    static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:6.2.6"));
+
 
     @BeforeEach
     void setup() throws Exception {

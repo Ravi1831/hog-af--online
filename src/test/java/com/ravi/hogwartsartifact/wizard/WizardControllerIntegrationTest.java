@@ -1,6 +1,7 @@
 package com.ravi.hogwartsartifact.wizard;
 
 import com.ravi.hogwartsartifact.system.StatusCode;
+import com.redis.testcontainers.RedisContainer;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,6 +21,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
@@ -28,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Testcontainers
 @DisplayName("Integration tests for Wizard API endpoints")
 @Tag("integration")
 @Transactional
@@ -44,6 +50,11 @@ public class WizardControllerIntegrationTest {
 
     @Value("${api.endpoints.base-url}")
     String baseUrl;
+
+    @Container
+    @ServiceConnection
+    static RedisContainer redisContainer = new RedisContainer(DockerImageName.parse("redis:6.2.6"));
+
 
     @BeforeEach
     void setup() throws Exception {
